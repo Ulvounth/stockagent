@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,36 @@ export default function RootLayout({
       lang="nb"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="border-b border-slate-200 bg-white">
+          <nav
+            aria-label="Hovedmeny"
+            className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-8"
+          >
+            <Link
+              href="/"
+              className="flex items-center gap-3 font-semibold tracking-tight"
+            >
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-800 text-sm text-white"
+                aria-hidden="true"
+              >
+                S
+              </span>
+              StockAgent
+            </Link>
+            <span className="text-xs text-slate-500">
+              Oslo Børs <span className="mx-2 text-slate-300">/</span> Nyheter &
+              oversikt
+            </span>
+          </nav>
+        </div>
+        {children}
+        <footer className="mx-auto mt-auto w-full max-w-7xl px-4 py-8 text-xs leading-6 text-slate-400 sm:px-8">
+          StockAgent · Nyhetsoversikter bygger på overskrifter og kildelenker.
+          Åpne originalkilden for full kontekst.
+        </footer>
+      </body>
     </html>
   );
 }

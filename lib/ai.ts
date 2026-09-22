@@ -1,6 +1,26 @@
-import Groq from "groq-sdk";
+import "server-only";
 import { cacheLife } from "next/cache";
+import {
+  completionText,
+  createGroqClient,
+  groqCompletionOptions,
+} from "./groq";
 import { StockWithChange, HistoricalRow, NewsItem } from "./types";
+
+async function generateSummary(
+  prompt: string,
+  outputTokens: number,
+): Promise<string> {
+  const groq = createGroqClient();
+  const completion = await groq.chat.completions.create({
+    ...groqCompletionOptions(outputTokens),
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.4,
+  });
+  // Feil håndteres av visningen/API-et utenfor cachen. En feilmelding skal
+  // aldri mellomlagres som en vellykket analyse i en time.
+  return completionText(completion);
+}
 
 /**
  * Bygger en lesbar tekstblokk av aksjedata som sendes til AI-en.
@@ -45,39 +65,9 @@ export async function generateReport(
   "use cache";
   cacheLife("hours");
 
-  const apiKey = process.env.GROQ_API_KEY;
+  if (!stocks.length) return "Ingen kursdata tilgjengelige for oppsummering.";
 
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY mangler i .env.local");
-  }
-
-  const groq = new Groq({ apiKey });
-
-  try {
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [
-        {
-          role: "user",
-          content: buildPrompt(stocks),
-        },
-      ],
-      max_tokens: 400,
-      temperature: 0.4,
-    });
-
-    return (
-      completion.choices[0]?.message?.content ?? "Ingen rapport tilgjengelig."
-    );
-  } catch (error: unknown) {
-    if (
-      error instanceof Error &&
-      error.message.includes("rate_limit_exceeded")
-    ) {
-      return "AI-rapporten er midlertidig utilgjengelig (for mange forespørsler). Prøv igjen om litt.";
-    }
-    throw error;
-  }
+  return generateSummary(buildPrompt(stocks), 400);
 }
 
 /**
@@ -197,38 +187,8 @@ export async function generateHistoryReport(
   "use cache";
   cacheLife("hours");
 
-  const apiKey = process.env.GROQ_API_KEY;
+  if (history.length < 2)
+    return "For lite kurshistorikk til en teknisk oppsummering.";
 
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY mangler i .env.local");
-  }
-
-  const groq = new Groq({ apiKey });
-
-  try {
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [
-        {
-          role: "user",
-          content: buildHistoryPrompt(symbol, name, history, news),
-        },
-      ],
-      max_tokens: 700,
-      temperature: 0.4,
-    });
-
-    return (
-      completion.choices[0]?.message?.content ??
-      "Ingen oppsummering tilgjengelig."
-    );
-  } catch (error: unknown) {
-    if (
-      error instanceof Error &&
-      error.message.includes("rate_limit_exceeded")
-    ) {
-      return "AI-analysen er midlertidig utilgjengelig (for mange forespørsler). Prøv igjen om litt.";
-    }
-    throw error;
-  }
+  return generateSummary(buildHistoryPrompt(symbol, name, history, news), 700);
 }

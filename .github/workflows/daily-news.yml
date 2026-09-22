@@ -1,0 +1,46 @@
+name: Daglige aksjenyheter
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+      timezone: "Europe/Oslo"
+    # Nytt forsøk ved kildefeil eller en avbrutt morgenkjøring.
+    # En fullført dagsrapport gjør dette til en rask no-op.
+    - cron: "30 9 * * *"
+      timezone: "Europe/Oslo"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-stock-news
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Hent og lagre dagsrapport
+        run: npm run news:daily -- --scheduled
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          EODHD_NEWS_ENABLED: ${{ vars.EODHD_NEWS_ENABLED }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          REDDIT_ENABLED: ${{ vars.REDDIT_ENABLED }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+          REDDIT_SUBREDDITS: ${{ vars.REDDIT_SUBREDDITS }}

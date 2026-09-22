@@ -2,27 +2,38 @@
   "name": "stockagent",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check": "npm run lint && npm test && npm run build && npm run test:runtime",
+    "test:runtime": "node --test tests/runtime.test.mjs",
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
+    "news:daily": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/daily-news.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.105.1",
-    "groq-sdk": "^1.1.2",
-    "next": "16.2.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "@supabase/supabase-js": "^2.116.0",
+    "fast-xml-parser": "^5.11.1",
+    "groq-sdk": "^1.6.0",
+    "next": "^16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "^16.3.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

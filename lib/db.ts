@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabase";
+import { getSupabaseAdmin } from "./supabase";
 import { StockWithChange } from "./types";
 
 /**
@@ -8,6 +8,7 @@ import { StockWithChange } from "./types";
 export async function saveStockPrices(
   stocks: StockWithChange[],
 ): Promise<void> {
+  if (!stocks.length) return;
   const rows = stocks.map((s) => ({
     symbol: s.symbol,
     date: s.date,
@@ -23,7 +24,7 @@ export async function saveStockPrices(
     vol_ratio: s.vol_ratio,
   }));
 
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from("stock_prices")
     .upsert(rows, { onConflict: "symbol,date" });
 
