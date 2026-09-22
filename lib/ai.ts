@@ -62,7 +62,9 @@ Skriv en kort daglig oppsummering på norsk (3–5 setninger).
 export async function generateReport(
   stocks: StockWithChange[],
 ): Promise<string> {
-  "use cache";
+  // Delt cache mellom instansene. Groqs gratisnivå begrenser tokens per minutt,
+  // ikke bare antall kall, så den samme analysen skal lages én gang.
+  "use cache: remote";
   cacheLife("hours");
 
   if (!stocks.length) return "Ingen kursdata tilgjengelige for oppsummering.";
@@ -184,7 +186,7 @@ export async function generateHistoryReport(
   history: HistoricalRow[],
   news: NewsItem[] = [],
 ): Promise<string> {
-  "use cache";
+  "use cache: remote";
   cacheLife("hours");
 
   if (history.length < 2)

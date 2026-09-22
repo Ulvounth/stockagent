@@ -1,7 +1,18 @@
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 import { readRedditPosts } from "@/lib/reddit";
 import type { StockDigest } from "@/lib/daily-types";
 import { formatOsloTime, osloDate } from "@/lib/schedule";
+
+// Uten cache koster hver visning av forsiden ett Reddit-kall per aksje.
+// Kontrollen ligger i app-laget, slik at den daglige jobben og testene
+// fortsatt leser Reddit direkte. Ett minutts revalidering holder slettede
+// innlegg borte uten å gjøre en oppdateringsløkke til en rategrense.
+async function cachedRedditPosts(ids: string[], page: number) {
+  "use cache: remote";
+  cacheLife("minutes");
+  return readRedditPosts(ids, page);
+}
 
 export async function RedditDiscussions({
   digest,
@@ -11,7 +22,7 @@ export async function RedditDiscussions({
   page?: number;
 }) {
   if (digest.redditPostIds === undefined) return null;
-  const result = await readRedditPosts(digest.redditPostIds, page);
+  const result = await cachedRedditPosts(digest.redditPostIds, page);
   const sectionId = `reddit-${digest.symbol}`;
   const pageHref = (page: number) => {
     const query = new URLSearchParams({

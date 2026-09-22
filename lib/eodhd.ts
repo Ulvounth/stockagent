@@ -44,7 +44,11 @@ async function fetchStock(
   symbol: string,
   name: string,
 ): Promise<StockWithChange | null> {
-  "use cache";
+  // Kursene ligger utenfor det prerenderte skallet, så et rent "use cache"
+  // holder bare i minnet til én instans. Serverless gir da et nytt EODHD-kall
+  // per sidevisning. Remote-cachen deles mellom instansene og holder forbruket
+  // innenfor dagskvoten. Uten konfigurert handler faller den tilbake til minne.
+  "use cache: remote";
   cacheLife("hours");
   const rows = await fetchRows(symbol, 21);
   const today = rows[0];
@@ -84,7 +88,7 @@ export async function fetchHistory(
   symbol: string,
   days = 30,
 ): Promise<HistoricalRow[]> {
-  "use cache";
+  "use cache: remote";
   cacheLife("hours");
   const rows = await fetchRows(symbol, days + 1);
   return rows.slice(0, days).map((row, index) => {
