@@ -129,7 +129,7 @@ allerede kjører, eller 503 ved delvis/mislykket innhenting. Gi funksjonen minst
 
 Appen har **manuelle søkelenker** til X og Reddit for hver aksje, både i oversikten
 og på aksjesiden. De søker på selskapsnavn, aliaser, børssymbol og cashtag, f.eks.
-`$DOFG`. X åpnes med siste treff; Reddit med nye innlegg fra siste uke. Dette er
+`$NOD`. X åpnes med siste treff; Reddit med nye innlegg fra siste uke. Dette er
 vanlige lenker uten API-kall fra agenten. Innlogging kan være nødvendig.
 Søkene følger ikke datoen i rapportarkivet.
 
@@ -184,7 +184,7 @@ antallet nyhetstreff. Gamle rapporter uten Reddit beholder sin opprinnelige dekn
 ## Aksjeliste og drift
 
 Endre `lib/watchlist.ts` for å legge til eller fjerne aksjer. Bruk EODHD-symbol
-(f.eks. `DOFG.OL`), korrekt selskapsnavn og eventuelle presise navnealiaser.
+(f.eks. `NOD.OL`), korrekt selskapsnavn og eventuelle presise navnealiaser.
 Endringen gjelder daglige søk fra neste kjøring etter at workflowens gren er oppdatert.
 Filterknappene i appen velger hva du ser; alle aksjene i filen overvåkes.
 

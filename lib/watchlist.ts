@@ -8,8 +8,16 @@ export type WatchedStock = {
 // Bruk presise selskapsnavn som aliaser; korte tickere gir ofte irrelevante treff.
 export const WATCHLIST: WatchedStock[] = [
   { symbol: "SOMA.OL", name: "Solstad Maritime" },
-  { symbol: "DOFG.OL", name: "DOF Group", aliases: ["DOF Group ASA"] },
-  { symbol: "SUBC.OL", name: "Subsea 7", aliases: ["Subsea7"] },
-  { symbol: "SALME.OL", name: "Salmon Evolution" },
+  {
+    symbol: "NOD.OL",
+    name: "Nordic Semiconductor",
+    aliases: ["Nordic Semiconductor ASA"],
+  },
+  {
+    symbol: "KOG.OL",
+    name: "Kongsberg Gruppen",
+    aliases: ["Kongsberg Gruppen ASA"],
+  },
+  { symbol: "KIT.OL", name: "Kitron", aliases: ["Kitron ASA"] },
   { symbol: "SOFF.OL", name: "Solstad Offshore" },
 ];

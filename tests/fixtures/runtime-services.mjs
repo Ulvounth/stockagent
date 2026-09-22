@@ -25,7 +25,7 @@ globalThis.fetch = async (input, init) => {
   }
   if (url.pathname.endsWith("/stock_news_digests")) {
     const symbol =
-      url.searchParams.get("symbol")?.replace(/^eq\./, "") ?? "DOFG.OL";
+      url.searchParams.get("symbol")?.replace(/^eq\./, "") ?? "NOD.OL";
     return Response.json([
       {
         report_date: reportDate,
@@ -64,7 +64,7 @@ globalThis.fetch = async (input, init) => {
     const calls = (priceCalls.get(symbol) ?? 0) + 1;
     priceCalls.set(symbol, calls);
     console.log(`MOCK_PRICE:${symbol}:${calls}`);
-    if (symbol === "DOFG.OL" && calls === 1)
+    if (symbol === "NOD.OL" && calls === 1)
       return new Response("Temporary failure", { status: 503 });
     return Response.json([
       {
@@ -87,7 +87,7 @@ globalThis.fetch = async (input, init) => {
   }
   if (url.hostname === "api.groq.com") {
     const body = JSON.parse(String(init?.body));
-    if (body.messages[0].content.includes("SUBC.OL") && failedAiCalls++ < 2)
+    if (body.messages[0].content.includes("KOG.OL") && failedAiCalls++ < 2)
       return Response.json(
         {
           error: {

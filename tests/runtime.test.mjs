@@ -92,7 +92,7 @@ test(
 
       const start = performance.now();
       const response = await request(
-        "/stocks/DOFG.OL?date=2026-09-21&redditPage=2",
+        "/stocks/NOD.OL?date=2026-09-21&redditPage=2",
       );
       assert.equal(response.status, 200);
       const reader = response.body.getReader();
@@ -119,14 +119,14 @@ test(
       );
       assert.match(html, /REDDIT_TITLE_t3_p100/);
       assert.ok(
-        html.includes("date=2026-09-21&amp;redditPage=3#reddit-DOFG.OL"),
+        html.includes("date=2026-09-21&amp;redditPage=3#reddit-NOD.OL"),
       );
       assert.deepEqual(logs.match(/MOCK_REDDIT:[^\r\n]+/g), [
         "MOCK_REDDIT:100:t3_p100",
       ]);
 
       const failedAi = await (
-        await request("/stocks/SUBC.OL?date=2026-02-30")
+        await request("/stocks/KOG.OL?date=2026-02-30")
       ).text();
       assert.ok(
         failedAi.includes("STREAMED_NEWS_HEADLINE"),
@@ -137,7 +137,7 @@ test(
           "Den tekniske oppsummeringen er midlertidig utilgjengelig.",
         ),
       );
-      const recoveredAi = await (await request("/stocks/SUBC.OL")).text();
+      const recoveredAi = await (await request("/stocks/KOG.OL")).text();
       assert.ok(
         recoveredAi.includes("DELAYED_TECHNICAL_SUMMARY"),
         "AI rate-limit messages must not be cached as successful summaries",
