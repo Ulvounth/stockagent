@@ -18,6 +18,20 @@ er en enkel regel basert på overskrift og kilde, ikke en faktasjekk. Google New
 er en søkeindeks: dette gir ikke full dekning av NewsWeb, alle nettsider, sosiale
 medier eller lukkede forum. AI-en leser overskrifter, ikke artiklenes fulltekst.
 
+## Oljepris i sidepanelet
+
+Forsiden og aksjesidene viser Brent og WTI i en gratis
+[TradingView-widget](https://www.tradingview.com/widget-docs/widgets/charts/symbol-overview/).
+Panelet viser pris, endring og graf med valg av tidsperiode. Det står til høyre
+på store skjermer og under innholdet på mindre skjermer.
+
+Widgeten lastes direkte i nettleseren og oppdateres uavhengig av dagsrapporten.
+Den krever ingen API-nøkkel, databaseendring eller ekstra cron-jobb.
+Symbolene `TVC:UKOIL` og `TVC:USOIL` er indikative CFD-priser i USD per fat,
+ikke garanterte sanntidskurser fra en futuresbørs. Data kan være forsinket,
+og markedet har stengte perioder. TradingViews kildehenvisning beholdes.
+Ved blokkert eller utilgjengelig widget finnes direkte lenker til begge grafene.
+
 ## Første oppsett
 
 Krever **Node.js 24** og et Supabase-prosjekt.
@@ -71,8 +85,13 @@ i et allerede tilknyttet prosjekt:
    oppretter nyhetstabellene og jobbfunksjonene med RLS og tilgang kun for service role.
 2. [`20260922090000_independent_source_coverage.sql`](supabase/migrations/20260922090000_independent_source_coverage.sql)
    gir nyheter og Reddit hver sin tidsgrense og gjenoppretter vellykket dekning fra eldre rapporter.
+3. [`20260922120000_stock_prices.sql`](supabase/migrations/20260922120000_stock_prices.sql)
+   oppretter kurstabellen som `POST /api/sync` skriver til, og den unike indeksen
+   på `(symbol, date)` som upserten krever. Har du tabellen fra før, er det indeksen
+   som betyr noe: uten den feiler hver synk med `42P10`. Hopp over migrasjonen
+   hvis du ikke bruker kurssynken.
 
-**Har du kjørt den første migrasjonen allerede, trenger du bare den andre.**
+**Har du kjørt den første migrasjonen allerede, trenger du bare de neste.**
 Eksisterende rapporter og kurstabeller beholdes. Kjør den nye migrasjonen før
 den oppdaterte nyhetsjobben tas i bruk.
 
@@ -173,8 +192,10 @@ Ved forespørselsgrensen stopper
 klienten videre kall i ventetiden Reddit oppgir.
 
 Rapporten lagrer kun referanse-ID-er og kildestatus fra Reddit, ikke titler,
-innhold eller forfattere. Gjeldende titler hentes uten innholdscache når rapporten
-åpnes; slettede/fjernede innlegg filtreres bort. Hver visning kontrollerer maksimalt
+innhold eller forfattere. Gjeldende titler hentes når rapporten åpnes og
+mellomlagres i ett minutt, slik at en oppdateringsløkke eller flere lesere ikke
+blir til ett Reddit-kall per aksje per visning. Titler lagres aldri i databasen,
+og slettede/fjernede innlegg filtreres bort. Hver visning kontrollerer maksimalt
 100 referanser per aksje med ett `/api/info`-kall. «Forrige/Neste» åpner flere sider
 på aksjesiden og beholder rapportdatoen. Alle lagrede referanser forblir tilgjengelige.
 Ved lesefeil vises en melding,
@@ -196,8 +217,11 @@ Filterknappene i appen velger hva du ser; alle aksjene i filen overvåkes.
 - Feil fra en nyhetskilde stopper ikke de andre. AI-feil stopper ikke nyhetslagring.
 - Den tekniske AI-oppsummeringen på aksjesiden laster separat, slik at et tregt AI-svar ikke holder igjen nyheter eller kurstabellen.
 - Kursdata mellomlagres per aksje. Delvise kurslister og AI-feilmeldinger mellomlagres ikke som vellykkede resultater i en time.
+- Kurser, AI-analyser og Reddit-oppslag bruker `use cache: remote`. Disse ligger utenfor det prerenderte skallet, og en ren minnecache deles ikke mellom instanser på serverless hosting — da ville hver sidevisning gitt nye kall mot kilder med dagskvote. Uten konfigurert `cacheHandlers` faller direktivet tilbake til minne, så selvhosting fungerer som før.
+- [`app/robots.ts`](app/robots.ts) blokkerer crawling. Forsiden og aksjesidene gjør oppslag ved hver visning; slett filen hvis siden skal indekseres.
+- GitHub deaktiverer planlagte workflows i offentlige repoer etter 60 dager uten aktivitet. Blir det stille i repoet, stopper morgenjobben til den slås på igjen under Actions.
 - Lagringen er uavhengig av EODHD-kursdata. Sluttkursene er ikke sanntidskurser.
-- Eksisterende kurssynk er nå `POST /api/sync` med `CRON_SECRET`; den krever fortsatt den eksisterende `stock_prices`-tabellen.
+- Eksisterende kurssynk er nå `POST /api/sync` med `CRON_SECRET`; den krever `stock_prices`-tabellen og den unike indeksen fra den tredje migrasjonen. Appen leser aldri denne tabellen, så kursene på sidene er upåvirket av om synken kjøres.
 - Det gamle API-et `GET /api/report` krever også `CRON_SECRET` fordi det utløser AI-kall.
 
 ## Kontroller

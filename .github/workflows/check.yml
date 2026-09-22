@@ -1,7 +1,11 @@
 name: Kodekontroll
 
 on:
+  # Bare main på push. Uten grenen ville en push til en gren med åpen PR
+  # startet både push- og pull_request-kjøringen; concurrency fanger dem ikke
+  # opp, fordi github.ref er ulik for de to hendelsene.
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
