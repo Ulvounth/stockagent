@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { OilSidebar } from "./components/oil-sidebar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +33,7 @@ export default function RootLayout({
         <div className="border-b border-slate-200 bg-white">
           <nav
             aria-label="Hovedmeny"
-            className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-8"
+            className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-5 sm:px-8"
           >
             <Link
               href="/"
@@ -52,8 +53,11 @@ export default function RootLayout({
             </span>
           </nav>
         </div>
-        {children}
-        <footer className="mx-auto mt-auto w-full max-w-7xl px-4 py-8 text-xs leading-6 text-slate-400 sm:px-8">
+        <div className="mx-auto grid w-full max-w-[1600px] items-start xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0">{children}</div>
+          <OilSidebar />
+        </div>
+        <footer className="mx-auto mt-auto w-full max-w-[1600px] px-4 py-8 text-xs leading-6 text-slate-400 sm:px-8">
           StockAgent · Nyhetsoversikter bygger på overskrifter og kildelenker.
           Åpne originalkilden for full kontekst.
         </footer>
