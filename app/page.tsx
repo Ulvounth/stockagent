@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { connection } from "next/server";
 import { fetchAllStocks } from "@/lib/eodhd";
 import { listReportDates, readDailyNews } from "@/lib/daily-news";
@@ -7,12 +8,21 @@ import { formatOsloTime, isReportDue, osloDate } from "@/lib/schedule";
 import { DigestCard } from "./components/digest-card";
 import { SocialSearch } from "./components/social-search";
 import { reportDate, type QueryValue } from "@/lib/report-query";
+import Loading from "./loading";
 
 type Props = {
   searchParams: Promise<{ symbol?: QueryValue; date?: QueryValue }>;
 };
 
-export default async function Home({ searchParams }: Props) {
+export default function Home(props: Props) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <HomeContent {...props} />
+    </Suspense>
+  );
+}
+
+async function HomeContent({ searchParams }: Props) {
   await connection();
   const params = await searchParams;
   const symbol =

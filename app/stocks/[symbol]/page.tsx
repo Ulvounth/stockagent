@@ -11,14 +11,22 @@ import { SocialSearch } from "@/app/components/social-search";
 import { isReportDue, osloDate } from "@/lib/schedule";
 import type { HistoricalRow } from "@/lib/types";
 import { reportDate, reportPage, type QueryValue } from "@/lib/report-query";
+import Loading from "@/app/loading";
 
-export default async function StockPage({
-  params,
-  searchParams,
-}: {
+type Props = {
   params: Promise<{ symbol: string }>;
   searchParams: Promise<{ date?: QueryValue; redditPage?: QueryValue }>;
-}) {
+};
+
+export default function StockPage(props: Props) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <StockContent {...props} />
+    </Suspense>
+  );
+}
+
+async function StockContent({ params, searchParams }: Props) {
   await connection();
   const { symbol } = await params;
   const query = await searchParams;
